@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -14,15 +15,22 @@ type App struct {
 }
 
 func (a *App) handleRoutes() {
+	a.Router.HandleFunc("/login", a.login).Methods("POST")
+	a.Router.HandleFunc("/logout", a.logout).Methods("POST")
+
 	a.Router.HandleFunc("/books", a.getBooks).Methods("GET")
 	a.Router.HandleFunc("/books/{id}", a.readBook).Methods("GET")
-	a.Router.HandleFunc("/books", a.createBook).Methods("POST")
-	a.Router.HandleFunc("/books/{id:[0-9]+}", a.updateBook).Methods("PUT")
-	a.Router.HandleFunc("/books/{id:[0-9]+}", a.deleteBook).Methods("DELETE")
+
+	secured := a.Router.PathPrefix("/secured").Subrouter()
+	secured.Use(JWTMiddleware)
+
+	secured.HandleFunc("/books", a.createBook).Methods("POST")
+	secured.HandleFunc("/books/{id:[0-9]+}", a.updateBook).Methods("PUT")
+	secured.HandleFunc("/books/{id:[0-9]+}", a.deleteBook).Methods("DELETE")
 }
 
 func (a *App) Initialise(initialBooks []Book, id int) {
-	Books = initialBooks
+	BookDB = initialBooks
 	BookID = id
 	a.Router = mux.NewRouter().StrictSlash(true)
 	a.handleRoutes()
@@ -107,6 +115,36 @@ func (a *App) deleteBook(w http.ResponseWriter, r *http.Request) {
 		sendError(w, http.StatusNotFound, err.Error())
 		return
 	}
+	sendResponse(w, http.StatusOK, map[string]string{"result": "success"})
+}
+
+func (a *App) login(w http.ResponseWriter, r *http.Request) {
+	var creds Credentials
+	err := json.NewDecoder(r.Body).Decode(&creds)
+	if err != nil || creds.Username != "user" || creds.Password != "pass" {
+		sendError(w, http.StatusUnauthorized, "Invalid credentials")
+		return
+	}
+
+	token, err := GenerateJWT(creds.Username)
+	if err != nil {
+		sendError(w, http.StatusInternalServerError, "Failed to generate token")
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:    "jwt",
+		Value:   token,
+		Expires: time.Now().Add(15 * time.Minute),
+	})
+	sendResponse(w, http.StatusOK, map[string]string{"token": token})
+}
+
+func (a *App) logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:    "jwt",
+		Expires: time.Now().Add(-time.Hour),
+	})
 	sendResponse(w, http.StatusOK, map[string]string{"result": "success"})
 }
 

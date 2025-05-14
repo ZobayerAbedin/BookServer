@@ -4,6 +4,7 @@ import "errors"
 
 type Author struct {
 	Name string `json:"name"`
+	Home string `json:"home"`
 }
 
 type Book struct {
@@ -12,8 +13,19 @@ type Book struct {
 	Genre string `json:"genre"`
 }
 
-var Books []Book
+type Credentials struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type AuthorBooks struct {
+	Author `json:"author"`
+	BookDB []int `json:"books"`
+}
+
+var BookDB []Book
 var BookID int
+var CredentialsDB map[string]Credentials
 
 func InitBook() ([]Book, int) {
 	books := []Book{
@@ -23,12 +35,12 @@ func InitBook() ([]Book, int) {
 			Genre: "Fiction",
 		},
 		{
-			ID:    4,
+			ID:    2,
 			Title: "To Kill a Mockingbird",
 			Genre: "Fiction",
 		},
 		{
-			ID:    7,
+			ID:    3,
 			Title: "1984",
 			Genre: "Dystopian",
 		},
@@ -37,19 +49,19 @@ func InitBook() ([]Book, int) {
 }
 
 func getBooks() ([]Book, error) {
-	return Books, nil
+	return BookDB, nil
 }
 
 func (t *Book) createBook() error {
 	BookID++
 	t.ID = BookID
-	Books = append(Books, *t)
+	BookDB = append(BookDB, *t)
 	return nil
 }
 
 func (t *Book) getBook() error {
 	id := t.ID
-	for _, book := range Books {
+	for _, book := range BookDB {
 		if book.ID == id {
 			t.Title = book.Title
 			t.Genre = book.Genre
@@ -61,10 +73,10 @@ func (t *Book) getBook() error {
 
 func (t *Book) updateBook() error {
 	id := t.ID
-	for i, book := range Books {
+	for i, book := range BookDB {
 		if book.ID == id {
-			Books[i].Title = t.Title
-			Books[i].Genre = t.Genre
+			BookDB[i].Title = t.Title
+			BookDB[i].Genre = t.Genre
 			return nil
 		}
 	}
@@ -74,7 +86,7 @@ func (t *Book) updateBook() error {
 func (t *Book) deleteBook() error {
 	id := t.ID
 	indexToBeDeleted := -1
-	for i, book := range Books {
+	for i, book := range BookDB {
 		if book.ID == id {
 			indexToBeDeleted = i
 			break
@@ -83,6 +95,6 @@ func (t *Book) deleteBook() error {
 	if indexToBeDeleted == -1 {
 		return errors.New("book not found")
 	}
-	Books = append(Books[:indexToBeDeleted], Books[indexToBeDeleted+1:]...)
+	BookDB = append(BookDB[:indexToBeDeleted], BookDB[indexToBeDeleted+1:]...)
 	return nil
 }
