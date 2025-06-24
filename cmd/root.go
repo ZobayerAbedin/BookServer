@@ -8,7 +8,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "yourapp",
+	Use:   "bookserver",
 	Short: "A simple CLI using Cobra",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Hello from root command!")
