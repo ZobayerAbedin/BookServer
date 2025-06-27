@@ -16,4 +16,4 @@ WORKDIR /app
 COPY --from=builder /app/BookServer .
 ENTRYPOINT ["./BookServer"]
 
-CMD ["init"]    
+CMD ["init"]        

@@ -7,7 +7,7 @@ spec:
   selector:
     matchLabels:
       app: bookserver
-  template:
+  template: 
     metadata:
       labels: 
         app: bookserver
