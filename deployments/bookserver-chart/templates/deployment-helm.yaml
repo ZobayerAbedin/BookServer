@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookserver-deployment
+spec:
+  replicas: {{ .Values.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{.Values.image.repository}}
+  template:
+    metadata:
+      labels:
+        app: {{.Values.image.repository}}
+    spec:
+      containers:
+        - name: {{.Chart.Name}}
+          image: {{.Values.image.repository}}:{{.Values.image.tag}}
+          imagePullPolicy: {{.Values.image.pullPolicy}}
+          args: [ "init", "-z", "8080" ]
+
+          ports:
+            - containerPort: {{.Values.service.targetPort}}
+              name: http
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resource | nindent 12}}
+
+
