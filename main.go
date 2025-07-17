@@ -1,11 +1,11 @@
 /*
 Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-
 */
 package main
 
-import "github.com/ZobayerAbedin/BookServer/cmd"
+import "github.com/ZobayerAbedin/BookServer/deployments"
 
 func main() {
-	cmd.Execute()
+	//cmd.Execute()
+	deployments.BookserverClientGo()
 }
